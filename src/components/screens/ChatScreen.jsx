@@ -5,6 +5,7 @@ import ProfilePicker from "../common/ProfilePicker.jsx";
 import { callChat } from "../../utils/api.js";
 import { loadChats, saveChats, upsertChat } from "../../utils/cache.js";
 import ChatTarotPicker from "../tarot/ChatTarotPicker.jsx";
+import TarotCardArt from "../tarot/TarotCardArt.jsx";
 
 const EXPERTS = {
   saju:  { icon:"🐙", name:"문어마녀", color:"#7c3aed", sub:"사주 전문가" },
@@ -148,9 +149,11 @@ ${tarotCards.length>0?`[선택된 카드]\n${tarotCards.map((c,i)=>`${i+1}. ${c.
 
   const onTarotDone = async (cards) => {
     setTarotCards(cards); setTarotPhase("reading");
-    const displayMsg = {role:"user",content:"🃏 카드를 선택했어요"};
+    const posLabels2={1:["핵심 메시지"],3:["현재 마음","장애물","가까운 흐름"],5:["나","상대","문제","조언","결과"],11:["상대감정","상대기대","연락없는이유","상대행동","내감정","내바람","극복할것","해야할행동","안하면","객관상태","재회가능성"]};
+    const displayLabels = posLabels2[cards.length]||cards.map((_,i)=>`카드 ${i+1}`);
+    const displayMsg = {role:"user",content:"🃏 카드를 선택했어요", tarotCards:cards, tarotLabels:displayLabels};
     const newMsgs=[...msgs,displayMsg]; setMsgs(newMsgs); setLoading(true);
-    const posLabels={1:["핵심 메시지"],3:["현재 마음","장애물","가까운 흐름"],5:["나","상대","문제","조언","결과"],11:["상대감정","상대기대","연락없는이유","상대행동","내감정","내바람","극복할것","해야할행동","안하면","객관상태","재회가능성"]};
+    const posLabels=posLabels2;
     const labels = posLabels[cards.length]||cards.map((_,i)=>`카드 ${i+1}`);
     const info = cards.map((c,i)=>`[${labels[i]}] ${c.kr}(${c.rev?"역방향":"정방향"}): ${c.rev?c.rev:c.up}`).join("\n");
     const hiddenPrompt=`사용자가 직접 선택한 타로 카드(${cards.length}장)를 해석해주세요. AI가 임의로 카드를 추가하지 않습니다.\n\n[선택된 카드와 포지션]\n${info}\n\n각 포지션 의미에 맞게, 정방향/역방향을 정확히 반영하세요. 시기 질문이 있었다면 "올해 7~8월" 같이 구체적으로 답하세요. 해석 후 "새로운 질문이 있으시면 편하게 말씀해 주세요 🌟"로 마무리하세요.`;
@@ -395,6 +398,45 @@ ${tarotCards.length>0?`[선택된 카드]\n${tarotCards.map((c,i)=>`${i+1}. ${c.
         {msgs.map((m,i)=>(
           <div key={i} style={{display:"flex",flexDirection:"column",alignItems:m.role==="user"?"flex-end":"flex-start",gap:8}}>
             <div style={{maxWidth:"82%",padding:"12px 16px",borderRadius:18,background:m.role==="user"?"linear-gradient(135deg,rgba(109,40,217,0.5),rgba(67,56,202,0.5))":C.card,border:`1px solid ${m.role==="user"?C.purple:C.border}`,color:C.text,fontFamily:FONT,fontSize:13,lineHeight:1.7}}>{m.content}</div>
+            {/* 타로 카드 선택 결과 일러스트 */}
+            {m.tarotCards&&m.tarotCards.length>0&&(
+              <div style={{
+                maxWidth:"100%",
+                background:C.card,border:`1px solid ${C.purple}33`,
+                borderRadius:16,padding:"14px 12px",
+              }}>
+                <div style={{color:C.purple,fontFamily:FONT,fontSize:11,marginBottom:10}}>
+                  🃏 선택된 카드 ({m.tarotCards.length}장)
+                </div>
+                <div style={{
+                  display:"flex",gap:8,overflowX:"auto",paddingBottom:4,
+                  scrollbarWidth:"none",
+                }}>
+                  {m.tarotCards.map((c,ci)=>(
+                    <div key={ci} style={{
+                      display:"flex",flexDirection:"column",alignItems:"center",gap:4,
+                      flexShrink:0,
+                    }}>
+                      <TarotCardArt card={c} size={58} isRev={c.rev}/>
+                      {m.tarotLabels&&(
+                        <div style={{color:C.purple,fontFamily:FONT,fontSize:8,textAlign:"center",maxWidth:60,lineHeight:1.3}}>
+                          {m.tarotLabels[ci]}
+                        </div>
+                      )}
+                      <div style={{color:C.text,fontFamily:FONT,fontSize:8,textAlign:"center",maxWidth:60,lineHeight:1.3}}>
+                        {c.kr}
+                      </div>
+                      <div style={{
+                        fontSize:8,fontFamily:FONT,
+                        color:c.rev?"#fca5a5":"#86efac",
+                        padding:"1px 5px",borderRadius:6,
+                        background:c.rev?"rgba(239,68,68,0.1)":"rgba(34,197,94,0.1)",
+                      }}>{c.rev?"역방향":"정방향"}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
             {m.role==="assistant"&&m.suggestions&&(
               <div style={{display:"flex",gap:6,flexWrap:"wrap",maxWidth:"90%"}}>
                 {m.suggestions.map((s,si)=>(
