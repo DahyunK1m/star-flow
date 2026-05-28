@@ -115,12 +115,12 @@ ${categoryPrompts[category.id]||""}
 
 JSON으로만 응답:
 {
-  "overall": "전체 통합 메시지 — 이 스프레드가 말하는 핵심 (150자)",
-  "cards": [${category.positions.map((pos,i)=>`"[${pos}] ${category.id==="health"?"건강·컨디션 관점에서 ":" "}이 카드가 이 자리에서 말하는 것 (80자)"`).join(",")}],
-  "flow": "전체 흐름 해석 — 카드들을 연결해서 읽은 이야기 (200자)",
-  "keyword": "이 리딩의 핵심 키워드 3개 쉼표구분",
-  "advice": "지금 나에게 필요한 실천 조언 (100자)",
-  "message": "타로가 보내는 한 문장 메시지 (40자)"
+  "overall": "전체 통합 메시지 — 이 스프레드가 말하는 핵심",
+  "cards": [${category.positions.map((pos,i)=>`"[${pos}] ${category.id==="health"?"건강·컨디션 관점에서 ":" "}이 카드가 이 자리에서 말하는 것"`).join(",")}],
+  "flow": "전체 흐름 해석 — 카드들을 연결해서 읽은 이야기",
+  "keyword": "변화, 선택, 인내 (예시처럼 키워드만 3개)",
+  "advice": "지금 나에게 필요한 실천 조언",
+  "message": "타로가 보내는 한 문장 메시지"
 }`;
 
     try {

@@ -30,10 +30,10 @@ export default function TodayScreen({ profiles, onAddProfile }) {
 
 JSON으로만:
 {
-  "overall": "🌱 오늘 총운 — 일진 근거 포함 (60자)",
-  "love": "오늘 연애운 구체적으로 (60자)",
-  "money": "오늘 금전운 구체적으로 (60자)",
-  "work": "오늘 직장·학업운 구체적으로 (60자)",
+  "overall": "🌱 오늘 총운 — 일진 근거 포함",
+  "love": "오늘 연애운 구체적으로",
+  "money": "오늘 금전운 구체적으로",
+  "work": "오늘 직장·학업운 구체적으로",
   "lucky_color": "오늘의 행운색 (색깔 이름)",
   "score": {"love":0~100,"money":0~100,"work":0~100},
   "letter": "오늘 사주에서 상담자에게 보내는 위로와 응원 감성 편지 (100자, 따뜻하고 시적으로)"

@@ -16,11 +16,11 @@ export default function ZodiacScreen({profiles}) {
     const prompt=`오늘(${today}) ${zod.sign}(${zod.emoji})의 운세를 사주명리학과 서양 점성술을 접목하여 알려주세요.
 JSON으로만:
 {
-  "overall":"종합운 한줄(30자)",
-  "love":"연애운(50자)","money":"재물운(50자)","work":"직업운(50자)","health":"건강운(40자)",
+  "overall":"종합운 한줄",
+  "love":"연애운","money":"재물운","work":"직업운","health":"건강운",
   "score":{"love":0~100,"money":0~100,"work":0~100,"health":0~100},
-  "lucky":"오늘의 행운 아이템(15자)",
-  "message":"오늘의 별자리 메시지(70자)"
+  "lucky":"오늘의 행운 아이템",
+  "message":"오늘의 별자리 메시지"
 }`;
     try{ const r=await callAI(prompt,800,true); setResult({...r,zod}); }
     catch{ setResult({error:true}); }
