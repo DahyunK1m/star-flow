@@ -3,16 +3,21 @@ import { C, FONT } from "../../constants/colors.js";
 import { GlassCard, Btn, Spinner, PillarRow } from "../common/UI.jsx";
 import ProfilePicker from "../common/ProfilePicker.jsx";
 import { callSaju } from "../../utils/api.js";
-import { getCached, setCached } from "../../utils/cache.js";
+import { getCached, setCached, saveReport, loadReport } from "../../utils/cache.js";
 
-export default function SajuScreen({ profiles, onAddProfile, mode="saju", onBack }) {
+export default function SajuScreen({ profiles, onAddProfile, mode="saju", onBack, initialProfileId=null }) {
   const isShinnyeon = mode === "newyear";
-  const [sel, setSel]         = useState(null);
-  const [step, setStep]       = useState("pick");
+  const initProfile = initialProfileId ? profiles.find(p=>p.id===initialProfileId)||null : null;
+  const [sel, setSel]         = useState(initProfile);
+  const [step, setStep]       = useState(initialProfileId?"result":"pick");
   const [result, setResult]   = useState(null);
   const [loading, setLoading] = useState(false);
-  const [showDetail, setShowDetail] = useState(false);
-  const [detail, setDetail]   = useState(null);
+  const [showDetail, setShowDetail] = useState(!!initialProfileId);
+  const [detail, setDetail]   = useState(()=>{
+    if(!initialProfileId) return null;
+    const { loadReport } = require("../../utils/cache.js");
+    try { return loadReport(initialProfileId,"saju_detail")||null; } catch { return null; }
+  });
   const [detailLoading, setDetailLoading] = useState(false);
 
   const read = async () => {
@@ -42,29 +47,35 @@ JSON으로만:
   "health": "2026 건강운 (140자)",
   "advice": "올해 실천 조언 한 문장 (50자)"
 }`
-      : `이 사주의 무료 핵심 분석을 해주세요.
-일간 중심 기질·오행·지지 구조(일지·월지·충합)를 바탕으로 분석하세요.
+      : `이 사주를 깊이 있게 분석해주세요. 각 항목을 충분히 구체적으로 서술하세요.
 
-JSON으로만:
+분석 원칙:
+- 일간(${sel.saju.dayHs}) 중심으로 기질을 핵심으로 본다
+- 일지(${sel.saju.dayEb})와 월지(${sel.saju.monthEb}) 특성을 반드시 언급한다
+- 지지 충합이 있으면 구체적으로 어떤 영향인지 설명한다
+- 오행 분포를 바탕으로 강한 기운과 부족한 기운을 분석한다
+- 추상적인 말 대신 실생활에서 어떻게 드러나는지 구체적으로 서술한다
+
+JSON으로만 (각 항목 지정 글자수 엄수):
 {
-  "title": "일주 기질 한줄 (20자)",
-  "keyword": "이 사람을 설명하는 키워드 3개 쉼표구분",
-  "nature": "일간 중심 타고난 기질 (120자)",
-  "jiji": "일지·월지 특성과 지지 충합 구조 (80자)",
-  "element_strong": "강한 오행과 성격 장점 (80자)",
-  "element_weak": "부족한 오행과 조심해야 할 성향 (80자)",
-  "flow": "인생 전체 운세 흐름 (100자)",
-  "love": "연애운 요약 (60자)",
-  "money": "재물운 요약 (60자)",
-  "work": "직업운 요약 (60자)",
-  "health": "건강운 요약 (60자)",
-  "advice": "오늘부터 참고할 조언 (60자)"
+  "title": "일주 기질 한줄 (25자)",
+  "keyword": "이 사람을 가장 잘 설명하는 키워드 3개 쉼표구분",
+  "nature": "일간 중심 타고난 성격과 사고방식. 인간관계에서 어떻게 행동하는지, 스트레스 받을 때 어떤 모습인지 포함 (250자)",
+  "jiji": "일지·월지 특성 분석. 두 지지가 어떤 에너지를 만들어내는지, 충합이 있다면 삶에서 어떤 패턴으로 드러나는지 (200자)",
+  "element_strong": "강한 오행이 만들어내는 성격 장점과 재능. 어떤 상황에서 빛을 발하는지 구체적으로 (150자)",
+  "element_weak": "부족한 오행으로 생기는 조심해야 할 성향. 실생활에서 어떤 실수로 나타나는지 (150자)",
+  "flow": "인생 전체 운세 흐름. 어떤 시기에 강해지고 약해지는지, 삶의 큰 방향성 (200자)",
+  "love": "연애할 때의 모습, 끌리는 상대 유형, 반복되는 연애 패턴과 조심할 점 (150자)",
+  "money": "돈을 버는 방식, 쓰는 방식, 모으는 방식. 재물운에서 조심해야 할 점 (150자)",
+  "work": "잘 맞는 직업 방향, 조직형인지 프리랜서형인지, 커리어 성장 포인트 (150자)",
+  "health": "타고난 체력 흐름, 스트레스가 몸에 드러나는 방식, 조심해야 할 생활 습관 (150자)",
+  "advice": "지금 이 사람에게 가장 필요한 조언. 구체적이고 실천 가능한 것으로 (80자)"
 }`;
 
     try {
       const r = await callSaju("interpret", {
         profile: {y:sel.y,m:sel.m,d:sel.d,h:sel.h,isLunar:false,name:sel.name,gender:sel.gender,birthplace:sel.birthplace||""},
-        prompt, maxTokens:2000, model:"openai"
+        prompt, maxTokens:4000, model:"openai"
       });
       if(r.result) { setCached(sel.id, cacheType, r.result); setResult(r.result); }
       else setResult({error:true});
@@ -75,48 +86,55 @@ JSON으로만:
   const readDetail = async () => {
     if(!sel) return;
     setDetailLoading(true); setDetail(null);
+    // 영구 저장된 리포트 먼저 확인 (유료 컨텐츠 보존)
+    const saved = loadReport(sel.id, "saju_detail");
+    if(saved) { setDetail(saved); setDetailLoading(false); setShowDetail(true); return; }
     const cached = getCached(sel.id, "saju_detail");
     if(cached) { setDetail(cached); setDetailLoading(false); setShowDetail(true); return; }
 
     const {yp,mp,dp,tp,el,dayHs,dayEb,monthEb,ohaengCount,chungs} = sel.saju;
-    const prompt = `이 사주를 20페이지 정밀 리포트로 분석해주세요. 깊고 구체적으로 작성하세요.
+    const prompt = `이 사주를 20페이지 분량의 정밀 리포트로 분석해주세요.
+각 항목을 충분히 길고 구체적으로 작성하세요. 추상적 표현 대신 실생활 예시를 들어 설명하세요.
 
 분석 원칙:
 - 일간(${dayHs}) 중심으로 타고난 기질을 핵심으로 본다
+- 일지(${dayEb}), 월지(${monthEb}) 특성을 각 섹션에서 구체적으로 언급한다
 - 지지 충합형파해를 반드시 언급한다 (지지충: ${chungs.join(",")||"없음"})
+- 오행 분포(${Object.entries(ohaengCount).map(([k,v])=>k+":"+v).join(",")})를 바탕으로 강약을 분석한다
 - 대운·세운을 포함한 시간 흐름을 분석한다
-- 의학적 진단은 하지 않는다
+- 의학적 진단처럼 단정하지 않는다
+- 각 항목마다 "이 사람은 ~한 경향이 있어요", "~할 때 주의하세요" 식으로 독자에게 직접 말하는 어투로 쓴다
 
-JSON으로만 (각 항목 150~200자):
+JSON으로만 (각 항목 반드시 300~400자 분량으로 충분히 작성):
 {
-  "p1_nature": "일간으로 보는 타고난 성격·사고방식·인간관계 태도",
-  "p2_social": "월지로 보는 사회적 성향과 조직에서의 모습",
-  "p3_element": "오행 균형 분석 — 강한 오행·부족한 오행·반복 패턴",
-  "p4_sipseong": "십성 구조 — 경쟁력·돈 대하는 방식·사랑 방식·일과 성취",
-  "p5_jiji": "지지 구조 — 합·충·형·파·해와 내면 갈등·관계 패턴",
-  "p6_job": "직업운 — 잘 맞는 방향·피해야 할 환경·성장 포인트",
-  "p7_money": "재물운 — 돈 버는 방식·모으는 방식·투자 성향·조심할 점",
-  "p8_love": "연애운 — 사랑할 때 모습·끌리는 유형·반복 패턴·조심할 점",
-  "p9_marriage": "결혼운 — 장기연애 성향·결혼에서 중요한 것·조언",
-  "p10_relation": "인간관계운 — 친구·가족·지치게 하는 유형·가까이 두면 좋은 유형",
-  "p11_health": "건강운 — 체력 흐름·스트레스 표현 방식·생활 습관 조언",
-  "p12_daeun": "대운 흐름 — 현재 대운·앞으로의 흐름·인생 전환점",
-  "p13_seun": "세운 흐름 — 올해 2026년 흐름·기회·조심할 점",
-  "p14_life": "인생 전체 — 초년·청년·중년·후반 흐름과 성장 방향",
-  "p15_strength": "나의 강점 — 타고난 장점·살리면 좋은 재능",
-  "p16_weakness": "나의 약점 — 반복되는 실수·감정적 흔들리는 지점",
-  "p17_strategy": "삶의 전략 — 일·돈·인간관계·사랑·자기관리 핵심",
-  "p18_action": "올해 실천 조언 — 지금 신경 써야 할 것·줄여야 할 것·키워야 할 것",
-  "p19_summary": "사주 총평 — 전체 요약과 나를 위한 한 문장 조언",
-  "one_line": "나를 위한 한 문장 조언 (30자)"
+  "p1_nature": "일간으로 보는 나의 본질 — 타고난 성격의 핵심, 사고하는 방식, 감정을 처리하는 방식, 인간관계에서 보이는 태도, 스트레스 상황에서 드러나는 모습, 이 일간이 가진 빛과 그림자",
+  "p2_social": "월지로 보는 사회적 성향 — 사회에서 어떤 이미지로 보이는지, 조직 안에서의 강점과 약점, 사람들과 어울릴 때의 패턴, 대인관계에서 반복되는 실수와 주의할 점",
+  "p3_element": "오행 균형 분석 — 어떤 오행이 강하고 어떤 오행이 부족한지, 강한 오행이 삶에서 어떻게 드러나는지, 부족한 오행이 만들어내는 결핍 패턴, 보완하면 좋은 방향과 실생활 팁",
+  "p4_sipseong": "십성 구조 분석 — 비겁·식상·재성·관성·인성의 흐름, 경쟁심과 자존심은 어떤지, 돈을 대하는 방식, 사랑을 대하는 방식, 일과 성취를 대하는 방식, 이 사람의 핵심 욕구",
+  "p5_jiji": "지지 구조 분석 — 일지와 월지의 관계, 충이나 합이 있다면 내면에서 어떤 갈등이 생기는지, 겉으로 보이는 모습과 속마음의 차이, 관계 패턴에서 반복되는 것들",
+  "p6_job": "직업운 — 어떤 분야에서 빛나는지, 어떤 업무 환경이 맞고 어떤 것이 안 맞는지, 조직형·프리랜서형·사업형 중 어디에 가까운지, 커리어에서 가장 중요한 시기와 성장 포인트, 피해야 할 함정",
+  "p7_money": "재물운 — 돈이 들어오는 방식, 돈을 쓰는 성향, 저축과 투자에서의 패턴, 재물운에서 조심해야 할 것, 어떤 방식으로 돈을 모으는 것이 이 사람에게 맞는지",
+  "p8_love": "연애운 — 사랑할 때 어떤 모습인지, 끌리는 상대 유형, 반복되기 쉬운 연애 패턴, 잘 맞는 관계 방식, 연애에서 조심해야 할 것, 이 사람이 진짜로 원하는 사랑의 형태",
+  "p9_marriage": "결혼운과 장기 관계 — 장기 연애나 동거에서 어떤 모습인지, 결혼에서 중요하게 보는 것, 배우자와 부딪히기 쉬운 부분, 안정적인 관계를 만들기 위한 구체적인 조언",
+  "p10_relation": "인간관계운 — 친구 관계의 특성, 가족 관계에서의 역할, 나를 지치게 만드는 사람 유형, 가까이 두면 에너지가 되는 사람 유형, 사회적 관계에서 주의할 점",
+  "p11_health": "건강운 — 타고난 체력과 건강의 흐름, 스트레스가 몸에 드러나는 방식, 특히 취약한 부분, 조심해야 할 생활 습관, 건강을 지키기 위한 실천 조언 (의학적 진단 제외)",
+  "p12_daeun": "대운 흐름 — 현재 어떤 대운에 있는지, 앞으로의 대운 흐름, 인생에서 중요한 전환점이 될 시기, 어떤 운이 강해지고 약해지는지, 지금 이 시기를 어떻게 활용해야 하는지",
+  "p13_seun": "세운 흐름 — 2026년 병오년이 이 사주에 어떤 영향을 주는지, 올해 강해지는 기운과 조심해야 할 기운, 기회가 생기는 영역, 올해 인간관계와 일의 변화",
+  "p14_life": "인생 전체 흐름 — 초년의 모습과 과제, 청년기의 성장 방향, 중년에 펼쳐질 일들, 후반 인생의 흐름, 이 사람이 인생에서 반드시 이루어야 할 것",
+  "p15_strength": "나의 강점 — 타고난 장점과 재능, 노력하지 않아도 자연스럽게 잘 하는 것, 주변에서 인정받기 쉬운 부분, 이 강점을 살리면 좋은 구체적인 방법",
+  "p16_weakness": "나의 약점 — 반복되기 쉬운 실수의 패턴, 감정적으로 흔들리는 지점, 관계와 일에서 조심해야 할 부분, 이 약점을 보완하거나 수용하는 방법",
+  "p17_strategy": "나에게 맞는 삶의 전략 — 일에서의 핵심 전략, 돈에서의 핵심 전략, 인간관계에서의 핵심 전략, 사랑에서의 핵심 전략, 자기관리에서의 핵심 전략",
+  "p18_action": "올해의 실천 조언 — 지금 당장 시작해야 할 것, 지금 줄여야 할 것, 지금 키워야 할 것. 구체적이고 실천 가능한 것들로",
+  "p19_summary": "사주 총평 — 이 사람의 사주를 한마디로 정의하면, 인생에서 가장 중요한 과제, 잘 풀리기 위해 필요한 핵심 태도, 앞으로의 방향성",
+  "one_line": "이 사람에게 보내는 한 문장 조언 (40자 이내, 따뜻하고 힘이 되는 말로)"
 }`;
 
     try {
       const r = await callSaju("interpret", {
         profile: {y:sel.y,m:sel.m,d:sel.d,h:sel.h,isLunar:false,name:sel.name,gender:sel.gender,birthplace:sel.birthplace||""},
-        prompt, maxTokens:4000, model:"openai"
+        prompt, maxTokens:8000, model:"openai"
       });
-      if(r.result) { setCached(sel.id, "saju_detail", r.result); setDetail(r.result); setShowDetail(true); }
+      if(r.result) { setCached(sel.id, "saju_detail", r.result); saveReport(sel.id, "saju_detail", r.result); setDetail(r.result); setShowDetail(true); }
       else setDetail({error:true});
     } catch { setDetail({error:true}); }
     setDetailLoading(false);

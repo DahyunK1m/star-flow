@@ -392,8 +392,8 @@ ${tarotCards.length>0?`
 
   // ── 채팅 화면 ─────────────────────────────────
   return (
-    <div style={{display:"flex",flexDirection:"column",height:"100vh"}}>
-      <div style={{padding:"12px 16px",display:"flex",alignItems:"center",gap:12,background:C.card,borderBottom:`1px solid ${C.border}`,flexShrink:0}}>
+    <div style={{display:"flex",flexDirection:"column",height:"calc(100vh - 70px)"}}>
+      <div style={{padding:"12px 16px",display:"flex",alignItems:"center",gap:12,background:C.card,borderBottom:`1px solid ${C.border}`,flexShrink:0,position:"sticky",top:0,zIndex:10}}>
         <button onClick={()=>setPhase("list")} style={{background:"none",border:"none",color:C.sub,fontSize:20,cursor:"pointer"}}>←</button>
         <div style={{width:36,height:36,borderRadius:"50%",background:`radial-gradient(circle,${expertInfo.color}44,transparent)`,border:`1px solid ${expertInfo.color}55`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>{expertInfo.icon}</div>
         <div style={{flex:1,minWidth:0}}>
@@ -472,7 +472,7 @@ ${tarotCards.length>0?`
         <div ref={bottomRef}/>
       </div>
 
-      <div style={{position:"fixed",bottom:70,left:0,right:0,padding:"12px 16px",background:C.bg,borderTop:`1px solid ${C.border}`,display:"flex",gap:10,maxWidth:480,margin:"0 auto",boxSizing:"border-box",width:"100%"}}>
+      <div style={{position:"fixed",bottom:70,left:0,right:0,padding:"10px 16px",background:C.bg,borderTop:`1px solid ${C.border}`,display:"flex",gap:10,maxWidth:480,margin:"0 auto",boxSizing:"border-box",width:"100%",zIndex:10}}>
         <input value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&!e.shiftKey&&(e.preventDefault(),sendMessage(input))} placeholder="궁금한 것을 물어보세요…" style={{...inp,flex:1,padding:"10px 14px"}}/>
         <button onClick={()=>sendMessage(input)} disabled={!input.trim()||loading} style={{width:44,height:44,borderRadius:12,border:"none",cursor:"pointer",flexShrink:0,background:`linear-gradient(135deg,${expertInfo.color}88,rgba(109,40,217,0.6))`,color:"white",fontSize:18,opacity:input.trim()&&!loading?1:0.4}}>↑</button>
       </div>

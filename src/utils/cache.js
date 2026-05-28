@@ -24,6 +24,32 @@ export const setCached = (profileId, type, data) => {
   } catch {}
 };
 
+// ── 리포트 영구 저장 (날짜 무관, 프로필별 보존) ──────────
+const REPORT_KEY = "starflow_reports_v1";
+
+export const saveReport = (profileId, type, data) => {
+  try {
+    const all = JSON.parse(localStorage.getItem(REPORT_KEY)||"{}");
+    if(!all[profileId]) all[profileId] = {};
+    all[profileId][type] = { data, savedAt: Date.now() };
+    localStorage.setItem(REPORT_KEY, JSON.stringify(all));
+  } catch {}
+};
+
+export const loadReport = (profileId, type) => {
+  try {
+    const all = JSON.parse(localStorage.getItem(REPORT_KEY)||"{}");
+    return all[profileId]?.[type]?.data || null;
+  } catch { return null; }
+};
+
+export const loadAllReports = (profileId) => {
+  try {
+    const all = JSON.parse(localStorage.getItem(REPORT_KEY)||"{}");
+    return all[profileId] || {};
+  } catch { return {}; }
+};
+
 const CHAT_KEY = "starflow_chats_v1";
 
 export const loadChats = () => {

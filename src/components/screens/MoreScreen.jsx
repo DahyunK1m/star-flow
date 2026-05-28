@@ -1,12 +1,35 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { C, FONT } from "../../constants/colors.js";
 import { GlassCard, Btn, PillarRow } from "../common/UI.jsx";
 import ProfileForm from "../common/ProfileForm.jsx";
+import { loadAllReports } from "../../utils/cache.js";
+import SajuScreen from "./SajuScreen.jsx";
 
 export default function MoreScreen({profiles,onAddProfile,onUpdateProfile,onDeleteProfile}) {
   const me = profiles.find(p=>p.relation==="본인")||profiles[0];
   const [managing,setManaging] = useState(false);
   const [editing,setEditing] = useState(null);
+  const [viewReport,setViewReport] = useState(null); // {profileId, type}
+  const [allReports,setAllReports] = useState({});
+
+  useEffect(()=>{
+    // 저장된 리포트 목록 로드
+    const reports = {};
+    profiles.forEach(p=>{ reports[p.id] = loadAllReports(p.id); });
+    setAllReports(reports);
+  },[profiles]);
+
+  // 리포트 보기 화면
+  if(viewReport) {
+    const profile = profiles.find(p=>p.id===viewReport.profileId);
+    return <SajuScreen
+      profiles={profiles}
+      onAddProfile={()=>{}}
+      mode={viewReport.type==="newyear"?"newyear":"saju"}
+      onBack={()=>setViewReport(null)}
+      initialProfileId={viewReport.profileId}
+    />;
+  }
 
   return (
     <div style={{padding:"20px 16px 100px",display:"flex",flexDirection:"column",gap:16}}>
@@ -117,6 +140,35 @@ export default function MoreScreen({profiles,onAddProfile,onUpdateProfile,onDele
           </div>
         )}
       </GlassCard>
+
+      {/* 저장된 리포트 */}
+      {profiles.some(p=>Object.keys(allReports[p.id]||{}).length>0)&&(
+        <GlassCard>
+          <div style={{color:C.text,fontFamily:FONT,fontSize:14,marginBottom:12}}>📋 저장된 리포트</div>
+          <div style={{display:"flex",flexDirection:"column",gap:8}}>
+            {profiles.map(p=>{
+              const reports = allReports[p.id]||{};
+              return Object.entries(reports).map(([type,entry])=>{
+                const label = type==="saju_detail"?"정밀 사주 리포트":type==="newyear"?"신년운세":"사주";
+                const date = new Date(entry.savedAt).toLocaleDateString("ko-KR",{month:"short",day:"numeric"});
+                return (
+                  <div key={type} onClick={()=>setViewReport({profileId:p.id,type})} style={{
+                    display:"flex",alignItems:"center",justifyContent:"space-between",
+                    padding:"12px 14px",borderRadius:12,cursor:"pointer",
+                    border:`1px solid ${C.border}`,background:"rgba(255,255,255,0.02)",
+                  }}>
+                    <div>
+                      <div style={{color:C.text,fontFamily:FONT,fontSize:13}}>{p.name}님 {label}</div>
+                      <div style={{color:C.sub,fontFamily:FONT,fontSize:10,marginTop:2}}>{date} 저장</div>
+                    </div>
+                    <span style={{color:C.purple,fontFamily:FONT,fontSize:12}}>보기 →</span>
+                  </div>
+                );
+              });
+            })}
+          </div>
+        </GlassCard>
+      )}
 
       {/* 앱 정보 */}
       <GlassCard>
