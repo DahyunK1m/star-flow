@@ -22,7 +22,7 @@ export default function HomeScreen({ profiles, onAddProfile, navigate }) {
           <span style={{fontSize:22,animation:"float 3s ease-in-out infinite",display:"inline-block"}}>🌌</span>
           <h1 style={{
             fontFamily:FONT,fontSize:20,margin:0,
-            background:`linear-gradient(135deg,${C.text},${C.purple})`,
+            background:`linear-gradient(135deg,#60a5fa,#7c3aed)`,
             WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"
           }}>별의 흐름</h1>
         </div>
