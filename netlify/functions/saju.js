@@ -86,8 +86,8 @@ const getSipseong=(dayHs, targetHs)=>{
 
 // 지지 충합 계산
 const JIJI_CHUNG={자:"오",축:"미",인:"신",묘:"유",진:"술",사:"해",오:"자",미:"축",신:"인",유:"묘",술:"진",해:"사"};
-const JIJI_HAP=[[자,축],[인,해],[묘,술],[진,유],[사,신],[오,미]]; // 육합
-const SAMHAP=[[인,오,술],[해,묘,미],[신,자,진],[사,유,축]]; // 삼합
+const JIJI_HAP=[["자","축"],["인","해"],["묘","술"],["진","유"],["사","신"],["오","미"]]; // 육합
+const SAMHAP=[["인","오","술"],["해","묘","미"],["신","자","진"],["사","유","축"]]; // 삼합
 
 const calcSaju=(y,m,d,h)=>{
   const yp=getYearPillar(y),mp=getMonthPillar(y,m,d),dp=getDayPillar(y,m,d);
