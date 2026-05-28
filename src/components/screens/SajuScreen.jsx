@@ -149,9 +149,10 @@ JSON으로만 응답:
       const profilePayload = {y:sel.y,m:sel.m,d:sel.d,h:sel.h,isLunar:false,name:sel.name,gender:sel.gender,birthplace:sel.birthplace||""};
 
       // 두 번 나눠서 요청 (토큰 한도 초과 방지)
+      // 상세 리포트는 Claude 사용 (JSON 파싱 안정성 + 충분한 토큰)
       const [r1, r2] = await Promise.all([
-        callSaju("interpret", {profile:profilePayload, prompt:prompt1, maxTokens:3500, model:"openai"}),
-        callSaju("interpret", {profile:profilePayload, prompt:prompt2, maxTokens:3500, model:"openai"}),
+        callSaju("interpret", {profile:profilePayload, prompt:prompt1, maxTokens:4000, model:"claude"}),
+        callSaju("interpret", {profile:profilePayload, prompt:prompt2, maxTokens:4000, model:"claude"}),
       ]);
 
       if(r1.result && r2.result) {
@@ -171,7 +172,7 @@ JSON으로만 응답:
       }
     } catch(e) {
       console.error("saju detail error:", e);
-      setDetail({error:true});
+      setDetail({error:true, msg: e.message||"알 수 없는 오류"});
     }
     setDetailLoading(false);
   };
