@@ -19,7 +19,19 @@ export default function HomeScreen({ profiles, onAddProfile, navigate }) {
       {/* 헤더 */}
       <div style={{padding:"20px 20px 16px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
-          <span style={{fontSize:22,animation:"float 3s ease-in-out infinite",display:"inline-block"}}>🌌</span>
+          <svg width="32" height="32" viewBox="0 0 200 200" style={{flexShrink:0,animation:"float 3s ease-in-out infinite"}}>
+            <circle cx="100" cy="100" r="78" fill="none" stroke="#7c3aed" strokeWidth="2" opacity="0.4"/>
+            <circle cx="100" cy="100" r="64" fill="none" stroke="#a78bfa" strokeWidth="1" opacity="0.2"/>
+            <polygon points="100,40 113,74 100,108 87,74" fill="none" stroke="#7c3aed" strokeWidth="4" opacity="0.8" strokeLinejoin="round"/>
+            <polygon points="100,160 113,126 100,92 87,126" fill="none" stroke="#a78bfa" strokeWidth="3" opacity="0.5" strokeLinejoin="round"/>
+            <circle cx="100" cy="100" r="14" fill="#7c3aed"/>
+            <circle cx="100" cy="100" r="8" fill="#c4b5fd"/>
+            <circle cx="100" cy="100" r="4" fill="#e8e0f0"/>
+            <circle cx="100" cy="24" r="5" fill="#a78bfa" opacity="0.9"/>
+            <circle cx="176" cy="100" r="4" fill="#c4b5fd" opacity="0.7"/>
+            <circle cx="100" cy="176" r="4" fill="#c4b5fd" opacity="0.7"/>
+            <circle cx="24" cy="100" r="4" fill="#c4b5fd" opacity="0.7"/>
+          </svg>
           <h1 style={{
             fontFamily:FONT,fontSize:20,margin:0,
             background:`linear-gradient(135deg,#60a5fa,#7c3aed)`,
