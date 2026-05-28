@@ -52,8 +52,11 @@ export default function App() {
   const updateProfile = (p) => { const next=profiles.map(x=>x.id===p.id?p:x); setProfiles(next); saveProfiles(next); };
   const deleteProfile = (id)=> { const next=profiles.filter(x=>x.id!==id); setProfiles(next); saveProfiles(next); };
 
-  const navigate = (s) => { setScreen(s); setTab("home"); };
-  const goHome   = ()   => setScreen(null);
+  const navigate = (s) => {
+    if(s==="today") { setTab("today"); setScreen(null); }
+    else { setScreen(s); setTab("home"); }
+  };
+  const goHome = () => setScreen(null);
 
   // ── 현재 화면 결정 ──────────────────────────
   const renderContent = () => {
