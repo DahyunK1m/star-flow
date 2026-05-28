@@ -93,40 +93,39 @@ JSON으로만 (각 항목 지정 글자수 엄수):
     if(cached) { setDetail(cached); setDetailLoading(false); setShowDetail(true); return; }
 
     const {yp,mp,dp,tp,el,dayHs,dayEb,monthEb,ohaengCount,chungs} = sel.saju;
-    const prompt = `이 사주를 20페이지 분량의 정밀 리포트로 분석해주세요.
-각 항목을 충분히 길고 구체적으로 작성하세요. 추상적 표현 대신 실생활 예시를 들어 설명하세요.
+    const prompt = `당신은 한국 전통 사주명리학 최고 전문가입니다.
+아래 사주를 바탕으로 깊이 있는 사주 리포트를 작성해주세요.
 
-분석 원칙:
-- 일간(${dayHs}) 중심으로 타고난 기질을 핵심으로 본다
-- 일지(${dayEb}), 월지(${monthEb}) 특성을 각 섹션에서 구체적으로 언급한다
-- 지지 충합형파해를 반드시 언급한다 (지지충: ${chungs.join(",")||"없음"})
-- 오행 분포(${Object.entries(ohaengCount).map(([k,v])=>k+":"+v).join(",")})를 바탕으로 강약을 분석한다
-- 대운·세운을 포함한 시간 흐름을 분석한다
-- 의학적 진단처럼 단정하지 않는다
-- 각 항목마다 "이 사람은 ~한 경향이 있어요", "~할 때 주의하세요" 식으로 독자에게 직접 말하는 어투로 쓴다
+작성 원칙:
+- 각 섹션마다 생생한 비유와 은유로 시작한다 (예: "광야에 홀로 서 있는 바위 성벽", "메마른 대지 위에 쌓인 철광석" 같은 이미지)
+- 전문 용어(비겁, 식상, 군겁쟁재, 토다금매 등)를 쓸 때는 반드시 쉬운 말로 바로 풀어준다
+- 추상적 서술 금지. "이런 경향이 있다" 대신 "돈 좀 모일만 하면 친구가 빌려달라고 하는 상황이 반복된다"처럼 실생활 예시로 쓴다
+- 장점은 충분히 인정하고, 단점은 핀잔이 아니라 "이게 오히려 당신의 특별함"으로 연결한다
+- 마지막 섹션(p19_summary)은 반드시 따뜻한 위로와 응원으로 마무리한다
+- 마크다운(**, ##, -, *)은 절대 사용하지 않는다. 자연스러운 문단으로 쓴다
 
-JSON으로만 (각 항목 반드시 300~400자 분량으로 충분히 작성):
+JSON으로만 응답 (각 항목 반드시 350~500자, 스토리텔링 문체):
 {
-  "p1_nature": "일간으로 보는 나의 본질 — 타고난 성격의 핵심, 사고하는 방식, 감정을 처리하는 방식, 인간관계에서 보이는 태도, 스트레스 상황에서 드러나는 모습, 이 일간이 가진 빛과 그림자",
-  "p2_social": "월지로 보는 사회적 성향 — 사회에서 어떤 이미지로 보이는지, 조직 안에서의 강점과 약점, 사람들과 어울릴 때의 패턴, 대인관계에서 반복되는 실수와 주의할 점",
-  "p3_element": "오행 균형 분석 — 어떤 오행이 강하고 어떤 오행이 부족한지, 강한 오행이 삶에서 어떻게 드러나는지, 부족한 오행이 만들어내는 결핍 패턴, 보완하면 좋은 방향과 실생활 팁",
-  "p4_sipseong": "십성 구조 분석 — 비겁·식상·재성·관성·인성의 흐름, 경쟁심과 자존심은 어떤지, 돈을 대하는 방식, 사랑을 대하는 방식, 일과 성취를 대하는 방식, 이 사람의 핵심 욕구",
-  "p5_jiji": "지지 구조 분석 — 일지와 월지의 관계, 충이나 합이 있다면 내면에서 어떤 갈등이 생기는지, 겉으로 보이는 모습과 속마음의 차이, 관계 패턴에서 반복되는 것들",
-  "p6_job": "직업운 — 어떤 분야에서 빛나는지, 어떤 업무 환경이 맞고 어떤 것이 안 맞는지, 조직형·프리랜서형·사업형 중 어디에 가까운지, 커리어에서 가장 중요한 시기와 성장 포인트, 피해야 할 함정",
-  "p7_money": "재물운 — 돈이 들어오는 방식, 돈을 쓰는 성향, 저축과 투자에서의 패턴, 재물운에서 조심해야 할 것, 어떤 방식으로 돈을 모으는 것이 이 사람에게 맞는지",
-  "p8_love": "연애운 — 사랑할 때 어떤 모습인지, 끌리는 상대 유형, 반복되기 쉬운 연애 패턴, 잘 맞는 관계 방식, 연애에서 조심해야 할 것, 이 사람이 진짜로 원하는 사랑의 형태",
-  "p9_marriage": "결혼운과 장기 관계 — 장기 연애나 동거에서 어떤 모습인지, 결혼에서 중요하게 보는 것, 배우자와 부딪히기 쉬운 부분, 안정적인 관계를 만들기 위한 구체적인 조언",
-  "p10_relation": "인간관계운 — 친구 관계의 특성, 가족 관계에서의 역할, 나를 지치게 만드는 사람 유형, 가까이 두면 에너지가 되는 사람 유형, 사회적 관계에서 주의할 점",
-  "p11_health": "건강운 — 타고난 체력과 건강의 흐름, 스트레스가 몸에 드러나는 방식, 특히 취약한 부분, 조심해야 할 생활 습관, 건강을 지키기 위한 실천 조언 (의학적 진단 제외)",
-  "p12_daeun": "대운 흐름 — 현재 어떤 대운에 있는지, 앞으로의 대운 흐름, 인생에서 중요한 전환점이 될 시기, 어떤 운이 강해지고 약해지는지, 지금 이 시기를 어떻게 활용해야 하는지",
-  "p13_seun": "세운 흐름 — 2026년 병오년이 이 사주에 어떤 영향을 주는지, 올해 강해지는 기운과 조심해야 할 기운, 기회가 생기는 영역, 올해 인간관계와 일의 변화",
-  "p14_life": "인생 전체 흐름 — 초년의 모습과 과제, 청년기의 성장 방향, 중년에 펼쳐질 일들, 후반 인생의 흐름, 이 사람이 인생에서 반드시 이루어야 할 것",
-  "p15_strength": "나의 강점 — 타고난 장점과 재능, 노력하지 않아도 자연스럽게 잘 하는 것, 주변에서 인정받기 쉬운 부분, 이 강점을 살리면 좋은 구체적인 방법",
-  "p16_weakness": "나의 약점 — 반복되기 쉬운 실수의 패턴, 감정적으로 흔들리는 지점, 관계와 일에서 조심해야 할 부분, 이 약점을 보완하거나 수용하는 방법",
-  "p17_strategy": "나에게 맞는 삶의 전략 — 일에서의 핵심 전략, 돈에서의 핵심 전략, 인간관계에서의 핵심 전략, 사랑에서의 핵심 전략, 자기관리에서의 핵심 전략",
-  "p18_action": "올해의 실천 조언 — 지금 당장 시작해야 할 것, 지금 줄여야 할 것, 지금 키워야 할 것. 구체적이고 실천 가능한 것들로",
-  "p19_summary": "사주 총평 — 이 사람의 사주를 한마디로 정의하면, 인생에서 가장 중요한 과제, 잘 풀리기 위해 필요한 핵심 태도, 앞으로의 방향성",
-  "one_line": "이 사람에게 보내는 한 문장 조언 (40자 이내, 따뜻하고 힘이 되는 말로)"
+  "p1_nature": "일간(${dayHs})으로 보는 나의 본질. 이 일간의 상징적 이미지(금속, 나무, 물 등)로 시작해 타고난 성격의 핵심, 사고하는 방식, 감정을 처리하는 방식, 스트레스 상황에서 드러나는 모습까지 스토리로 연결",
+  "p2_social": "월지(${monthEb})로 보는 사회적 성향. 사회에서 어떤 이미지로 보이는지, 조직 안에서의 강점과 약점, 사람들과 어울릴 때의 패턴, 대인관계에서 반복되는 실수",
+  "p3_element": "오행 균형 분석. 강한 오행(${sel.saju.el})이 삶에서 어떻게 드러나는지, 부족한 오행이 만들어내는 결핍 패턴을 실생활 상황으로 묘사. 보완하면 좋은 방향 구체적으로",
+  "p4_sipseong": "십성 구조 분석. 비겁·식상·재성·관성·인성의 흐름을 쉬운 말로. 경쟁심과 자존심, 돈을 대하는 방식, 사랑을 대하는 방식, 일과 성취를 대하는 방식. 이 사람의 핵심 욕구",
+  "p5_jiji": "지지 구조 분석. 일지(${dayEb})와 월지(${monthEb})의 관계, 충이나 합(${chungs.join(',') || '없음'})이 있다면 내면에서 어떤 갈등이 생기는지, 겉으로 보이는 모습과 속마음의 차이",
+  "p6_job": "직업운. 어떤 분야에서 빛나는지 구체적 직군으로. 어떤 업무 환경이 맞고 안 맞는지, 조직형·프리랜서형·사업형 중 어디인지, 커리어에서 가장 중요한 시기와 피해야 할 함정",
+  "p7_money": "재물운. 돈이 들어오는 방식, 새나가는 방식을 실생활 예시로. 저축과 투자에서의 패턴, 조심해야 할 금전적 위험, 이 사람에게 맞는 재테크 방식",
+  "p8_love": "연애운. 사랑할 때 어떤 모습인지, 끌리는 상대 유형, 반복되기 쉬운 연애 패턴을 구체적으로. 이 사람이 진짜로 원하는 사랑의 형태와 연애에서 조심해야 할 것",
+  "p9_marriage": "결혼운과 장기 관계. 장기 연애나 동거에서 어떤 모습인지, 결혼에서 중요하게 보는 것, 배우자와 부딪히기 쉬운 부분, 안정적인 관계를 만들기 위한 구체적 조언",
+  "p10_relation": "인간관계운. 친구 관계의 특성, 가족 관계에서의 역할, 나를 지치게 만드는 사람 유형, 가까이 두면 에너지가 되는 사람 유형, 사회적 관계에서 주의할 점",
+  "p11_health": "건강운. 타고난 체력과 건강의 흐름, 스트레스가 몸에 드러나는 방식, 특히 취약한 부분, 조심해야 할 생활 습관, 건강을 지키기 위한 실천 조언. 의학적 진단 절대 금지",
+  "p12_daeun": "대운 흐름. 현재 어떤 대운에 있는지, 앞으로의 대운 흐름, 인생에서 중요한 전환점이 될 시기, 지금 이 시기를 어떻게 활용해야 하는지",
+  "p13_seun": "세운 흐름. 2026년 병오(丙午)년이 이 사주에 어떤 영향을 주는지 구체적으로. 올해 강해지는 기운과 조심해야 할 기운, 기회가 생기는 영역, 올해 인간관계와 일의 변화",
+  "p14_life": "인생 전체 흐름. 초년의 모습과 과제, 청년기의 성장 방향, 중년에 펼쳐질 일들, 후반 인생의 흐름. 이 사람이 인생에서 반드시 이루어야 할 것",
+  "p15_strength": "나의 강점. 타고난 장점과 재능을 구체적으로. 노력하지 않아도 자연스럽게 잘 하는 것, 주변에서 인정받기 쉬운 부분, 이 강점을 살리면 좋은 방법",
+  "p16_weakness": "나의 약점. 반복되기 쉬운 실수의 패턴을 실생활 예시로. 감정적으로 흔들리는 지점, 이 약점이 사실은 어떤 장점의 이면인지도 함께",
+  "p17_strategy": "나에게 맞는 삶의 전략. 일·돈·인간관계·사랑·자기관리 각각에서의 핵심 전략을 실천 가능한 방식으로",
+  "p18_action": "올해의 실천 조언. 지금 당장 시작해야 할 것, 지금 줄여야 할 것, 지금 키워야 할 것. 구체적이고 바로 실천 가능한 것들로",
+  "p19_summary": "사주 총평과 위로. 이 사람의 사주를 한 문장으로 정의하고, 지금까지 얼마나 힘들게 버텨왔는지 따뜻하게 인정해주고, 앞으로의 방향성과 함께 진심 어린 응원으로 마무리. 마지막 문장은 반드시 이 사람에게 보내는 따뜻한 한마디로",
+  "one_line": "이 사람에게 보내는 한 문장 응원 (40자 이내, 시적이고 따뜻하게)"
 }`;
 
     try {
@@ -162,35 +161,35 @@ JSON으로만 (각 항목 반드시 300~400자 분량으로 충분히 작성):
     <div style={{padding:"20px 16px 100px",display:"flex",flexDirection:"column",gap:16}}>
       <div style={{display:"flex",alignItems:"center",gap:12}}>
         <button onClick={()=>setShowDetail(false)} style={{background:"none",border:"none",color:C.sub,fontSize:20,cursor:"pointer"}}>←</button>
-        <h2 style={{color:C.text,fontFamily:FONT,fontSize:16,margin:0}}>{sel?.name}님 정밀 사주 리포트</h2>
+        <h2 style={{color:C.text,fontFamily:FONT,fontSize:16,margin:0}}>{sel?.name}님 상세 사주 분석</h2>
       </div>
-      {detailLoading&&<GlassCard><Spinner msg="20페이지 리포트 생성 중…"/></GlassCard>}
+      {detailLoading&&<GlassCard><Spinner msg="사주를 깊이 읽는 중… 잠시만요"/></GlassCard>}
       {detail&&!detail.error&&(
         <>
           {[
-            {icon:"🌟",label:"일간으로 보는 나의 본질",v:detail.p1_nature},
-            {icon:"🏢",label:"월지로 보는 사회적 성향",v:detail.p2_social},
-            {icon:"⚡",label:"오행 균형 분석",v:detail.p3_element},
-            {icon:"💫",label:"십성 구조 분석",v:detail.p4_sipseong},
-            {icon:"🔮",label:"지지 구조 분석",v:detail.p5_jiji},
-            {icon:"💼",label:"직업운",v:detail.p6_job},
-            {icon:"💰",label:"재물운",v:detail.p7_money},
-            {icon:"💕",label:"연애운",v:detail.p8_love},
-            {icon:"💍",label:"결혼운과 장기 관계",v:detail.p9_marriage},
-            {icon:"🤝",label:"인간관계운",v:detail.p10_relation},
-            {icon:"🌿",label:"건강운",v:detail.p11_health},
-            {icon:"🌊",label:"대운 흐름",v:detail.p12_daeun},
-            {icon:"📅",label:"세운 흐름 (2026년)",v:detail.p13_seun},
-            {icon:"🗺️",label:"인생 전체 흐름",v:detail.p14_life},
-            {icon:"💪",label:"나의 강점",v:detail.p15_strength},
-            {icon:"⚠️",label:"나의 약점",v:detail.p16_weakness},
-            {icon:"🎯",label:"나에게 맞는 삶의 전략",v:detail.p17_strategy},
-            {icon:"✅",label:"올해의 실천 조언",v:detail.p18_action},
-            {icon:"✨",label:"사주 총평",v:detail.p19_summary},
-          ].map(({icon,label,v})=>v&&(
+            {icon:"✦",label:"나는 어떤 사람인가",v:detail.p1_nature,col:"#a78bfa"},
+            {icon:"🏙️",label:"세상이 나를 보는 눈",v:detail.p2_social,col:C.cyan},
+            {icon:"⚖️",label:"내 안의 기운 지도",v:detail.p3_element,col:"#34d399"},
+            {icon:"🧭",label:"욕망과 재능의 설계도",v:detail.p4_sipseong,col:C.gold},
+            {icon:"🔮",label:"내면의 갈등과 관계 패턴",v:detail.p5_jiji,col:C.purple},
+            {icon:"⚔️",label:"타고난 직업의 방향",v:detail.p6_job,col:C.cyan},
+            {icon:"💰",label:"돈과 나의 관계",v:detail.p7_money,col:C.gold},
+            {icon:"💕",label:"사랑할 때의 나",v:detail.p8_love,col:C.rose},
+            {icon:"💍",label:"긴 인연과 결혼",v:detail.p9_marriage,col:"#f472b6"},
+            {icon:"🤝",label:"사람들과의 관계",v:detail.p10_relation,col:C.cyan},
+            {icon:"🌿",label:"몸과 마음의 건강",v:detail.p11_health,col:"#86efac"},
+            {icon:"🌊",label:"내 인생의 큰 흐름",v:detail.p12_daeun,col:"#60a5fa"},
+            {icon:"📅",label:"2026년 올해의 운세",v:detail.p13_seun,col:"#fb923c"},
+            {icon:"🗺️",label:"초년부터 노년까지",v:detail.p14_life,col:C.purple},
+            {icon:"💎",label:"내가 가진 빛나는 것들",v:detail.p15_strength,col:C.gold},
+            {icon:"🪞",label:"내가 조심해야 할 것들",v:detail.p16_weakness,col:"#f87171"},
+            {icon:"🎯",label:"나를 위한 삶의 전략",v:detail.p17_strategy,col:C.cyan},
+            {icon:"✅",label:"지금 당장 해야 할 것",v:detail.p18_action,col:"#86efac"},
+            {icon:"🌌",label:"별이 전하는 총평",v:detail.p19_summary,col:C.purple},
+          ].map(({icon,label,v,col})=>v&&(
             <GlassCard key={label}>
-              <div style={{color:C.purple,fontFamily:FONT,fontSize:12,marginBottom:8}}>{icon} {label}</div>
-              <p style={{color:C.text,fontFamily:FONT,fontSize:13,lineHeight:1.8,margin:0}}>{v}</p>
+              <div style={{color:col||C.purple,fontFamily:FONT,fontSize:12,marginBottom:10,fontWeight:"bold"}}>{icon} {label}</div>
+              <p style={{color:C.text,fontFamily:FONT,fontSize:13,lineHeight:2,margin:0,whiteSpace:"pre-wrap"}}>{v}</p>
             </GlassCard>
           ))}
           {detail.one_line&&(
@@ -272,7 +271,7 @@ JSON으로만 (각 항목 반드시 300~400자 분량으로 충분히 작성):
               border:`1px solid ${C.gold}44`,background:"rgba(212,168,75,0.08)",
               color:C.gold,fontFamily:FONT,fontSize:13,width:"100%",opacity:detailLoading?0.5:1,
             }}>
-              {detailLoading?"리포트 생성 중…":"📋 20페이지 정밀 사주 리포트 보기 →"}
+              {detailLoading?"리포트 생성 중…":"📋 더 자세한 사주 보기 →"}
             </button>
           )}
         </>
