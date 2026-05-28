@@ -161,15 +161,30 @@ ${extraContext||""}`;
       const fullPrompt = `${sajuCtx}\n\n${prompt}`;
       let reply;
 
-      if(model==="openai") {
-        if(!process.env.OPENAI_API_KEY) throw new Error("OPENAI_API_KEY 환경변수가 설정되지 않았습니다. Netlify > Site configuration > Environment variables에서 추가해주세요.");
-        const res=await fetch("https://api.openai.com/v1/chat/completions",{
-          method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${process.env.OPENAI_API_KEY}`},
-          body:JSON.stringify({model:"gpt-4o-mini",max_tokens:maxTokens,messages:[{role:"user",content:fullPrompt}]})
+      const callClaude = async (prompt, tokens) => {
+        const res=await fetch("https://api.anthropic.com/v1/messages",{
+          method:"POST",headers:{"Content-Type":"application/json","x-api-key":process.env.ANTHROPIC_API_KEY,"anthropic-version":"2023-06-01"},
+          body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:tokens,messages:[{role:"user",content:prompt}]})
         });
         const data=await res.json();
-        if(data.error) throw new Error(`OpenAI 오류: ${data.error.message}`);
-        reply=data.choices?.[0]?.message?.content||"";
+        return data.content?.[0]?.text||"";
+      };
+
+      if(model==="openai") {
+        try {
+          if(!process.env.OPENAI_API_KEY) throw new Error("no key");
+          const res=await fetch("https://api.openai.com/v1/chat/completions",{
+            method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${process.env.OPENAI_API_KEY}`},
+            body:JSON.stringify({model:"gpt-4o-mini",max_tokens:maxTokens,messages:[{role:"user",content:fullPrompt}]})
+          });
+          const data=await res.json();
+          if(data.error) throw new Error(data.error.message);
+          reply=data.choices?.[0]?.message?.content||"";
+        } catch(e) {
+          // OpenAI 실패 시 Claude로 자동 폴백
+          console.log("OpenAI 실패, Claude로 폴백:", e.message);
+          reply = await callClaude(fullPrompt, maxTokens);
+        }
       } else {
         const res=await fetch("https://api.anthropic.com/v1/messages",{
           method:"POST",headers:{"Content-Type":"application/json","x-api-key":process.env.ANTHROPIC_API_KEY,"anthropic-version":"2023-06-01"},
